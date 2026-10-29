@@ -1,0 +1,315 @@
+/* Custom Scrollbar Frutiger Aero */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.25); border-radius: 10px; }
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #00A8E8 0%, #00C9A7 100%);
+    border-radius: 10px;
+    border: 1.5px solid rgba(255, 255, 255, 0.9);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+/* FRUTIGER AERO SKY & AQUA WATER ATMOSPHERE */
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: 
+        radial-gradient(circle at 15% 15%, rgba(0, 201, 167, 0.65), transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(78, 159, 61, 0.55), transparent 45%),
+        linear-gradient(135deg, #00A8E8 0%, #00C9A7 40%, #4E9F3D 80%, #99B898 100%);
+    background-size: 200% 200%;
+    animation: aeroSky 16s ease infinite;
+    overflow: hidden;
+    user-select: none;
+    color: #1A374D;
+}
+
+@keyframes aeroSky {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 100%; }
+    100% { background-position: 0% 0%; }
+}
+
+.bubble-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+.bubble {
+    position: absolute;
+    bottom: -120px;
+    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.98), rgba(0, 201, 167, 0.4) 50%, rgba(0, 168, 232, 0.6) 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 0 16px rgba(255, 255, 255, 0.95), 0 8px 24px rgba(0, 168, 232, 0.35);
+    animation: riseAero 14s infinite ease-in-out;
+    pointer-events: none;
+}
+@keyframes riseAero {
+    0% { transform: translateY(0) scale(0.7) rotate(0deg); opacity: 0; }
+    20% { opacity: 0.88; }
+    80% { opacity: 0.88; }
+    100% { transform: translateY(-115vh) scale(1.25) rotate(360deg); opacity: 0; }
+}
+
+/* Glassmorphism Window with Glossy Aqua Highlights */
+.aero-window {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(24px) saturate(220%);
+    -webkit-backdrop-filter: blur(24px) saturate(220%);
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 25px 60px rgba(0, 168, 232, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.98);
+    border-radius: 24px;
+    position: relative;
+    z-index: 10;
+}
+
+.aero-clock {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(200, 245, 255, 0.9) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.98);
+    box-shadow: 0 2px 8px rgba(0, 168, 232, 0.2), inset 0 1px 0 #fff;
+}
+
+.title-badge {
+    font-family: 'Fredoka', cursive;
+    color: #00A8E8;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.98), 0 0 14px rgba(0, 201, 167, 0.8);
+}
+
+.tab-nav-btn {
+    background: rgba(255, 255, 255, 0.45);
+    color: #1A374D;
+    border: 1px solid transparent;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    white-space: nowrap;
+}
+.tab-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.85);
+    color: #00A8E8;
+}
+.tab-nav-btn.active-tab {
+    background: #ffffff !important;
+    color: #00A8E8 !important;
+    border: 1.5px solid rgba(0, 168, 232, 0.9) !important;
+    box-shadow: 0 4px 12px rgba(0, 168, 232, 0.25), inset 0 1px 0 #ffffff !important;
+    font-weight: 800 !important;
+    transform: translateY(-1px);
+}
+
+.aero-btn {
+    background: linear-gradient(180deg, #00A8E8 0%, #0082B8 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 12px rgba(0, 168, 232, 0.35), inset 0 1.5px 0 rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transition: all 0.18s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+.aero-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.aero-btn:active { transform: translateY(1px); filter: brightness(0.95); }
+
+.aero-btn-green {
+    background: linear-gradient(180deg, #00C9A7 0%, #4E9F3D 100%);
+    box-shadow: 0 4px 12px rgba(0, 201, 167, 0.35), inset 0 1.5px 0 rgba(255, 255, 255, 0.95);
+}
+.aero-btn-danger {
+    background: linear-gradient(180deg, #F87171 0%, #DC2626 100%);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35), inset 0 1.5px 0 rgba(255, 255, 255, 0.95);
+}
+
+.aero-input {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1.5px solid rgba(0, 168, 232, 0.5);
+    transition: all 0.2s ease;
+    color: #1A374D;
+}
+.aero-input:focus { outline: none; background: #ffffff; border-color: #00A8E8; }
+
+/* ROOMCHAT CONTAINER & WALLPAPER COVER FIT */
+.room-wallpaper-bg {
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    position: relative;
+    transition: background-image 0.3s ease-in-out;
+}
+.room-wallpaper-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.15);
+    pointer-events: none;
+    z-index: 0;
+}
+.room-wallpaper-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* 2000s FRUTIGER AERO RAMPING / COMPACT BUBBLE CHAT (DESAIN PERSEGI SUDUT MEMBULAT 18PX) */
+.chat-bubble-base {
+    position: relative;
+    border-radius: 18px !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 4px 12px rgba(26, 55, 77, 0.15), inset 0 1.5px 1px rgba(255, 255, 255, 0.85) !important;
+    font-weight: 600 !important;
+    overflow: hidden;
+    width: max-content;
+    max-width: 80%;
+}
+
+.chat-bubble-base::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 45%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.05) 100%);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    pointer-events: none;
+}
+
+/* CHAT PRIBADI - SENDER (SAYA): SKY BLUE (#00A8E8) */
+.chat-bubble-sent {
+    background: linear-gradient(180deg, #00A8E8 0%, #0082B8 100%) !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(26, 55, 77, 0.4);
+    border-bottom-right-radius: 4px !important;
+}
+
+/* CHAT PRIBADI - RECEIVER: AURORA TEAL (#00C9A7) */
+.chat-bubble-received {
+    background: linear-gradient(180deg, #00C9A7 0%, #00967D 100%) !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(26, 55, 77, 0.4);
+    border-bottom-left-radius: 4px !important;
+}
+
+/* GRUP VARIANT 0: SKY BLUE (#00A8E8) */
+.chat-bubble-grp-sky {
+    background: linear-gradient(180deg, #00A8E8 0%, #0077A8 100%) !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(26, 55, 77, 0.4);
+    border-bottom-left-radius: 4px !important;
+}
+
+/* GRUP VARIANT 1: AURORA TEAL (#00C9A7) */
+.chat-bubble-grp-teal {
+    background: linear-gradient(180deg, #00C9A7 0%, #008E76 100%) !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(26, 55, 77, 0.4);
+    border-bottom-left-radius: 4px !important;
+}
+
+/* GRUP VARIANT 2: ECO GREEN (#4E9F3D) */
+.chat-bubble-grp-green {
+    background: linear-gradient(180deg, #4E9F3D 0%, #36702A 100%) !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(26, 55, 77, 0.4);
+    border-bottom-left-radius: 4px !important;
+}
+
+/* GRUP VARIANT 3: BRIGHT LIME (#99B898) */
+.chat-bubble-grp-lime {
+    background: linear-gradient(180deg, #99B898 0%, #6E8E6D 100%) !important;
+    color: #1A374D !important;
+    text-shadow: none;
+    border-bottom-left-radius: 4px !important;
+}
+
+.chat-bubble-system {
+    background: #ffffff !important;
+    border: 1.5px solid #00A8E8 !important;
+    box-shadow: 0 4px 12px rgba(0, 168, 232, 0.2) !important;
+    color: #1A374D !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+}
+
+.glass-panel-item {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.glass-panel-item:hover {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 168, 232, 0.8);
+}
+.glass-panel-item.active {
+    background: #ffffff !important;
+    border-color: #00A8E8 !important;
+    box-shadow: 0 4px 14px rgba(0, 168, 232, 0.25) !important;
+}
+.glass-panel-item.pinned-item {
+    background: rgba(200, 245, 235, 0.85);
+    border: 1.5px solid #00C9A7;
+}
+
+/* STYLE FRUTIGER AERO LIVE CAMERA VIEWFINDER FRAME */
+.aero-camera-viewfinder {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 2.5px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 30px rgba(0, 201, 167, 0.45), inset 0 0 20px rgba(0, 168, 232, 0.3);
+    background: #000000;
+}
+
+.aero-corner-tl, .aero-corner-tr, .aero-corner-bl, .aero-corner-br {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+    z-index: 10;
+}
+.aero-corner-tl {
+    top: 12px; left: 12px;
+    border-top: 3px solid #00C9A7;
+    border-left: 3px solid #00C9A7;
+    border-top-left-radius: 8px;
+    filter: drop-shadow(0 0 6px #00C9A7);
+}
+.aero-corner-tr {
+    top: 12px; right: 12px;
+    border-top: 3px solid #00C9A7;
+    border-right: 3px solid #00C9A7;
+    border-top-right-radius: 8px;
+    filter: drop-shadow(0 0 6px #00C9A7);
+}
+.aero-corner-bl {
+    bottom: 12px; left: 12px;
+    border-bottom: 3px solid #00C9A7;
+    border-left: 3px solid #00C9A7;
+    border-bottom-left-radius: 8px;
+    filter: drop-shadow(0 0 6px #00C9A7);
+}
+.aero-corner-br {
+    bottom: 12px; right: 12px;
+    border-bottom: 3px solid #00C9A7;
+    border-right: 3px solid #00C9A7;
+    border-bottom-right-radius: 8px;
+    filter: drop-shadow(0 0 6px #00C9A7);
+}
+
+.aero-shutter-btn {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #00C9A7 50%, #008E76 100%);
+    border: 3px solid #ffffff;
+    box-shadow: 0 6px 18px rgba(0, 201, 167, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.aero-shutter-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 24px rgba(0, 201, 167, 0.7), inset 0 2px 4px #fff;
+}
+.aero-shutter-btn:active {
+    transform: scale(0.92);
+}

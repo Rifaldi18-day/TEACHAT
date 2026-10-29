@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEACHAT! - Frutiger Aero Chat Application</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="h-screen w-screen flex items-center justify-center p-2 md:p-6 relative overflow-hidden select-none">
+
+    <!-- FLOATING BUBBLES BACKGROUND -->
+    <div class="bubble-container" id="bubbleContainer"></div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="appContainer" class="w-full max-w-6xl h-[92vh] aero-window flex flex-col overflow-hidden z-10 relative">
+        
+        <!-- HEADER BAR UTAMA -->
+        <div class="h-14 bg-white/50 border-b border-white/80 flex items-center justify-between px-4 backdrop-blur-md">
+            <div class="flex items-center gap-3">
+                <div class="flex gap-1.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-red-400 border border-white/90 shadow-inner"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-amber-400 border border-white/90 shadow-inner"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-400 border border-white/90 shadow-inner"></span>
+                </div>
+                <div class="flex items-center gap-2 cursor-pointer" onclick="showLandingView()">
+                    <i class="fa-solid fa-leaf text-emerald-500 text-xl drop-shadow"></i>
+                    <span class="title-badge text-2xl font-extrabold tracking-wide">TEACHAT!</span>
+                </div>
+            </div>
+
+            <!-- TOP USER PROFILE HEADER -->
+            <div id="topUserHeader" class="hidden flex items-center gap-3">
+                <div onclick="openProfileModal()" title="Edit Profil Saya" class="cursor-pointer flex items-center gap-2 bg-white/80 border border-white/90 px-3 py-1 rounded-full shadow-sm hover:bg-white transition">
+                    <div id="headerUserAvatar" class="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-400 to-emerald-400 border border-white overflow-hidden flex items-center justify-center text-white font-bold text-xs shadow-inner">
+                        ?
+                    </div>
+                    <span id="displayUsername" class="font-bold text-xs md:text-sm text-sky-950">User</span>
+                    <i class="fa-solid fa-pen-to-square text-xs text-sky-700"></i>
+                </div>
+                <button onclick="logout()" class="aero-btn aero-btn-danger text-xs text-white px-3.5 py-1 rounded-full font-bold shadow-sm">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i>Keluar
+                </button>
+            </div>
+        </div>
+
+        <!-- AUTH SCREEN -->
+        <div id="authScreen" class="flex-1 flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white/60 p-8 rounded-3xl border border-white/90 shadow-2xl backdrop-blur-xl text-center">
+                
+                <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-tr from-sky-400 via-teal-300 to-emerald-400 rounded-full flex items-center justify-center border-2 border-white shadow-lg text-white text-4xl relative">
+                    <i class="fa-solid fa-comment-dots drop-shadow-md"></i>
+                    <i class="fa-solid fa-leaf absolute -top-1 -right-1 text-emerald-500 text-2xl drop-shadow"></i>
+                </div>
+
+                <h2 class="text-2xl md:text-3xl font-extrabold text-sky-950 tracking-tight">SELAMAT DATANG</h2>
+                <h3 class="text-xl md:text-2xl font-black text-emerald-700 mb-2">DI TEACHAT!</h3>
+                <p class="text-xs text-sky-900 font-semibold mb-6">Aplikasi Pesan Realtime Berestetika Frutiger Aero</p>
+
+                <div id="authAlert" class="hidden mb-5 p-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-2 transition-all">
+                    <i id="authAlertIcon" class="fa-solid fa-triangle-exclamation text-sm"></i>
+                    <span id="authAlertText"></span>
+                </div>
+
+                <div id="authLandingView" class="space-y-3">
+                    <button onclick="showAuthForm('login')" class="aero-btn w-full py-3 rounded-2xl text-white font-extrabold text-sm tracking-wide flex items-center justify-center gap-2 shadow-md">
+                        <i class="fa-solid fa-right-to-bracket text-base"></i>
+                        <span>LOGIN</span>
+                    </button>
+                    <button onclick="showAuthForm('signup')" class="aero-btn aero-btn-green w-full py-3 rounded-2xl text-white font-extrabold text-sm tracking-wide flex items-center justify-center gap-2 shadow-md">
+                        <i class="fa-solid fa-user-plus text-base"></i>
+                        <span>DAFTAR</span>
+                    </button>
+                </div>
+
+                <div id="authFormView" class="hidden text-left space-y-4">
+                    <div class="flex items-center justify-between border-b border-sky-200 pb-2 mb-1">
+                        <h4 id="authFormTitle" class="text-sm font-extrabold text-sky-950 uppercase">Form Login</h4>
+                        <button type="button" onclick="showLandingView()" class="text-xs text-sky-700 hover:text-sky-900 font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-left"></i> Kembali
+                        </button>
+                    </div>
+
+                    <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3.5">
+                        <div>
+                            <label class="block text-xs font-bold text-sky-950 mb-1">Username</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-user absolute left-3.5 top-3 text-sky-600 text-xs"></i>
+                                <input type="text" id="authUsername" required placeholder="Masukkan username..." class="aero-input w-full pl-9 pr-3 py-2 rounded-xl text-xs text-sky-950 font-semibold">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-sky-950 mb-1">Password</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-lock absolute left-3.5 top-3 text-sky-600 text-xs"></i>
+                                <input type="password" id="authPassword" required placeholder="Masukkan password..." class="aero-input w-full pl-9 pr-3 py-2 rounded-xl text-xs text-sky-950 font-semibold">
+                            </div>
+                        </div>
+                        <button type="submit" id="authSubmitBtn" class="aero-btn w-full py-2.5 rounded-xl text-white font-bold text-xs tracking-wide mt-2 flex items-center justify-center gap-2">
+                            <span id="authSubmitLabel">Masuk Sekarang</span> <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MAIN DASHBOARD -->
+        <div id="mainDashboard" class="hidden flex-1 flex overflow-hidden">
+            
+            <!-- SIDEBAR -->
+            <div class="w-full md:w-80 bg-white/30 border-r border-white/60 flex flex-col backdrop-blur-md">
+                
+                <div class="px-3 py-2 bg-white/40 border-b border-white/60 flex items-center justify-between">
+                    <div class="aero-clock px-2.5 py-1 rounded-xl flex items-center gap-2">
+                        <i class="fa-regular fa-clock text-sky-600 text-xs"></i>
+                        <span id="clockTime" class="font-extrabold text-sky-950 text-xs tracking-wider">00:00:00</span>
+                    </div>
+                    <span id="clockDate" class="text-[10px] font-bold text-sky-900 bg-sky-100/80 px-2.5 py-0.5 rounded-full border border-sky-200">Senin, 1 Jan</span>
+                </div>
+
+                <!-- NAV TAB SIDEBAR -->
+                <div class="p-2 bg-white/20 border-b border-white/60 flex flex-row items-center justify-between gap-1 overflow-x-auto">
+                    <button onclick="switchSidebarTab('chats')" id="tabChats" class="tab-nav-btn active-tab flex-1 py-2 px-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 relative whitespace-nowrap">
+                        <i class="fa-solid fa-message text-sky-600"></i>
+                        <span id="tabBerandaLabel">Beranda</span>
+                        <span id="badgeBeranda" class="hidden bg-emerald-500 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full shadow-sm">0</span>
+                    </button>
+                    <button onclick="switchSidebarTab('friends')" id="tabFriends" class="tab-nav-btn flex-1 py-2 px-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 relative whitespace-nowrap">
+                        <i class="fa-solid fa-user-plus text-sky-600"></i>
+                        <span>Kenalan</span>
+                        <span id="badgeKenalan" class="hidden bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full shadow-sm">0</span>
+                    </button>
+                    <button onclick="switchSidebarTab('groups')" id="tabGroups" class="tab-nav-btn flex-1 py-2 px-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 relative whitespace-nowrap">
+                        <i class="fa-solid fa-users text-sky-600"></i>
+                        <span>Grup</span>
+                        <span id="badgeGrup" class="hidden bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full shadow-sm">0</span>
+                    </button>
+                </div>
+
+                <!-- TAB 1: BERANDA CHAT -->
+                <div id="sidebarChats" class="flex-1 flex flex-col overflow-hidden p-3">
+                    <div class="relative mb-3">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-sky-700 text-xs"></i>
+                        <input type="text" oninput="renderChatList(this.value)" placeholder="Cari obrolan..." class="aero-input w-full pl-8 pr-3 py-1.5 rounded-xl text-xs text-sky-950 font-semibold">
+                    </div>
+                    <div class="flex-1 overflow-y-auto space-y-1.5 pr-1" id="chatListContainer"></div>
+                </div>
+
+                <!-- TAB 2: KENALAN -->
+                <div id="sidebarFriends" class="hidden flex-1 flex flex-col overflow-hidden p-3">
+                    <div class="text-xs font-bold text-sky-950 mb-1">Pencarian Akun</div>
+                    <div class="relative mb-3">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-sky-700 text-xs"></i>
+                        <input type="text" id="searchUserInput" onkeyup="searchUsersServer()" placeholder="Ketik nama pengguna..." class="aero-input w-full pl-8 pr-3 py-1.5 rounded-xl text-xs text-sky-950 font-semibold">
+                    </div>
+                    
+                    <div class="text-[11px] font-bold text-sky-900 uppercase mb-1 flex items-center justify-between">
+                        <span>Permintaan Masuk</span>
+                        <span id="pendingReqCountLabel" class="text-[10px] bg-amber-200 text-amber-950 px-2 py-0.2 rounded-full font-bold">0</span>
+                    </div>
+                    <div id="pendingRequestsList" class="space-y-1.5 max-h-32 overflow-y-auto mb-3"></div>
+                    
+                    <div class="text-[11px] font-bold text-sky-900 uppercase mb-1">Rekomendasi Kenalan</div>
+                    <div id="userSearchResults" class="flex-1 overflow-y-auto space-y-1.5 pr-1"></div>
+                </div>
+
+                <!-- TAB 3: GRUP -->
+                <div id="sidebarGroups" class="hidden flex-1 flex flex-col overflow-hidden p-3">
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <button onclick="openCreateGroupModalStep1()" class="aero-btn text-[11px] text-white py-2 rounded-xl font-bold flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-plus"></i> Buat Grup
+                        </button>
+                        <button onclick="openJoinGroupModal()" class="aero-btn aero-btn-green text-[11px] text-white py-2 rounded-xl font-bold flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-key"></i> Masukin Kode
+                        </button>
+                    </div>
+                    <div class="text-[11px] font-bold text-sky-950 uppercase mb-1">Daftar Grup Saya</div>
+                    <div id="groupListContainer" class="flex-1 overflow-y-auto space-y-1.5 pr-1"></div>
+                </div>
+            </div>
+
+            <!-- CHAT MAIN PANEL -->
+            <div id="chatMainArea" class="flex-1 flex flex-col bg-white/10 backdrop-blur-md relative">
+                
+                <!-- CHAT HEADER -->
+                <div id="activeChatHeader" class="h-14 bg-white/45 border-b border-white/70 flex items-center justify-between px-4 z-20">
+                    <div class="flex items-center gap-3">
+                        <div id="activeAvatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-emerald-400 border-2 border-white flex items-center justify-center text-white font-bold text-lg shadow-sm overflow-hidden">
+                            ?
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 id="activeChatTitle" class="font-bold text-sm text-sky-950">Pilih Obrolan</h3>
+                                <span id="activeChatTypeTag" class="hidden text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase"></span>
+                            </div>
+                            <p id="activeChatSubtitle" class="text-[11px] text-sky-800 font-semibold">Klik teman atau grup di beranda</p>
+                            <p id="typingIndicator" class="hidden text-[10px] text-emerald-800 font-black animate-pulse"><i class="fa-solid fa-pen-nib mr-1"></i>sedang mengetik...</p>
+                        </div>
+                    </div>
+
+                    <!-- DROPDOWN MENUS (TITIK TIGA) -->
+                    <div class="flex items-center gap-2">
+                        <!-- MENU TITIK TIGA ROOMCHAT PRIBADI -->
+                        <div id="privateMenuSection" class="hidden relative">
+                            <button onclick="togglePrivateDropdown()" class="w-8 h-8 rounded-full bg-white/70 border border-white flex items-center justify-center text-sky-900 hover:bg-white font-bold shadow-sm">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <div id="privateDropdown" class="hidden absolute right-0 top-10 w-52 bg-white/95 border border-white shadow-xl rounded-2xl p-2 backdrop-blur-xl z-30 space-y-1">
+                                <button onclick="togglePinCurrentRoom()" class="w-full text-left px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-50 rounded-xl flex items-center gap-2">
+                                    <span>📌</span> <span id="pinPrivateMenuText">Pin Obrolan Ini</span>
+                                </button>
+                                <button onclick="openWallpaperModal(); togglePrivateDropdown();" class="w-full text-left px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-50 rounded-xl flex items-center gap-2">
+                                    <i class="fa-solid fa-image text-emerald-600"></i> Ganti Wallpaper
+                                </button>
+                                <div class="border-t border-sky-100 my-1"></div>
+                                <button onclick="unfriendCurrentTarget()" class="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl flex items-center gap-2">
+                                    <i class="fa-solid fa-user-xmark text-red-500"></i> Un-kenalan / Hapus
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- MENU TITIK TIGA GRUP -->
+                        <div id="groupMenuSection" class="hidden relative">
+                            <button onclick="toggleGroupDropdown()" class="w-8 h-8 rounded-full bg-white/70 border border-white flex items-center justify-center text-sky-900 hover:bg-white font-bold shadow-sm">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <div id="groupDropdown" class="hidden absolute right-0 top-10 w-56 bg-white/95 border border-white shadow-xl rounded-2xl p-2 backdrop-blur-xl z-30 space-y-1">
+                                <button onclick="togglePinCurrentRoom()" class="w-full text-left px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-50 rounded-xl flex items-center gap-2">
+                                    <span>📌</span> <span id="pinGroupMenuText">Pin Grup Ini</span>
+                                </button>
+                                <button onclick="openWallpaperModal(); toggleGroupDropdown();" class="w-full text-left px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-50 rounded-xl flex items-center gap-2">
+                                    <i class="fa-solid fa-image text-emerald-600"></i> Ganti Wallpaper
+                                </button>
+                                <button onclick="showGroupCodeModal()" class="w-full text-left px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-50 rounded-xl flex items-center gap-2">
+                                    <i class="fa-solid fa-key text-amber-500"></i> Ambil Kode Unik
+                                </button>
+                                <button onclick="openAddMembersModal()" class="w-full text-left px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-50 rounded-xl flex items-center gap-2">
+                                    <i class="fa-solid fa-user-plus text-emerald-600"></i> Tambah Anggota
+                                </button>
+                                <button onclick="openViewMembersModal()" class="w-full text-left px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-50 rounded-xl flex items-center gap-2">
+                                    <i class="fa-solid fa-users text-sky-600"></i> Lihat Anggota Grup
+                                </button>
+                                <button onclick="openEditGroupModal()" class="w-full text-left px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-50 rounded-xl flex items-center gap-2">
+                                    <i class="fa-solid fa-pen-to-square text-sky-600"></i> Edit Info Grup
+                                </button>
+                                <div class="border-t border-sky-100 my-1"></div>
+                                <button onclick="confirmLeaveGroup()" class="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl flex items-center gap-2">
+                                    <i class="fa-solid fa-right-from-bracket text-red-500"></i> Keluar Dari Grup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MESSAGES CONTAINER -->
+                <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-3 room-wallpaper-bg">
+                    <div id="emptyChatPlaceholder" class="h-full flex flex-col items-center justify-center text-center text-sky-900/60 p-6 room-wallpaper-content">
+                        <i class="fa-solid fa-comments text-6xl mb-3 text-emerald-600/40"></i>
+                        <h4 class="font-bold text-base text-sky-950">TEACHAT!</h4>
+                        <p class="text-xs max-w-xs mt-1">Pilih obrolan dari daftar di sebelah kiri untuk mulai mengobrol.</p>
+                    </div>
+                </div>
+
+                <!-- EMOJI PICKER -->
+                <div id="emojiPicker" class="hidden absolute bottom-16 left-4 bg-white/95 border border-white/90 shadow-2xl rounded-2xl p-3 w-64 backdrop-blur-xl z-20">
+                    <div class="text-xs font-bold text-sky-900 mb-2 border-b pb-1 flex justify-between">
+                        <span>Pilih Emoji</span>
+                        <button onclick="toggleEmojiPicker()"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="grid grid-cols-5 gap-2 text-xl max-h-40 overflow-y-auto">
+                        <span onclick="insertEmoji('😊')" class="cursor-pointer hover:scale-125 transition">😊</span>
+                        <span onclick="insertEmoji('😂')" class="cursor-pointer hover:scale-125 transition">😂</span>
+                        <span onclick="insertEmoji('😍')" class="cursor-pointer hover:scale-125 transition">😍</span>
+                        <span onclick="insertEmoji('😎')" class="cursor-pointer hover:scale-125 transition">😎</span>
+                        <span onclick="insertEmoji('👍')" class="cursor-pointer hover:scale-125 transition">👍</span>
+                        <span onclick="insertEmoji('🔥')" class="cursor-pointer hover:scale-125 transition">🔥</span>
+                        <span onclick="insertEmoji('🎉')" class="cursor-pointer hover:scale-125 transition">🎉</span>
+                        <span onclick="insertEmoji('❤️')" class="cursor-pointer hover:scale-125 transition">❤️</span>
+                        <span onclick="insertEmoji('🌱')" class="cursor-pointer hover:scale-125 transition">🌱</span>
+                        <span onclick="insertEmoji('🚀')" class="cursor-pointer hover:scale-125 transition">🚀</span>
+                    </div>
+                </div>
+
+                <!-- INPUT BAR DENGAN TOMBOL GALERI & KAMERA -->
+                <div id="chatInputBar" class="hidden h-16 bg-white/40 border-t border-white/70 p-2.5 flex items-center gap-2 backdrop-blur-md z-20">
+                    <input type="file" id="imageFileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                    
+                    <!-- UPLOAD DARI GALERI -->
+                    <button onclick="document.getElementById('imageFileInput').click()" class="aero-btn text-white w-9 h-9 rounded-full flex items-center justify-center text-xs shadow-sm" title="Upload dari Galeri">
+                        <i class="fa-solid fa-image"></i>
+                    </button>
+
+                    <!-- JEPRET FOTO LANGSUNG DARI KAMERA LIVE -->
+                    <button onclick="openCameraModal()" class="aero-btn aero-btn-green text-white w-9 h-9 rounded-full flex items-center justify-center text-xs shadow-sm" title="Ambil Foto Kamera">
+                        <i class="fa-solid fa-camera"></i>
+                    </button>
+                    
+                    <button onclick="toggleEmojiPicker()" class="aero-btn text-white w-9 h-9 rounded-full flex items-center justify-center text-xs shadow-sm" title="Emoji">
+                        <i class="fa-solid fa-face-smile"></i>
+                    </button>
+
+                    <input type="text" id="chatMessageInput" oninput="handleTyping()" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Ketik pesan..." class="aero-input flex-1 h-10 px-4 rounded-full text-xs text-sky-950 font-semibold">
+
+                    <button onclick="sendChatMessage()" class="aero-btn aero-btn-green text-white px-5 h-10 rounded-full font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                        <span>Kirim</span> <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KAMERA LIVE STREAM FRUTIGER AERO -->
+    <div id="cameraModal" class="hidden fixed inset-0 bg-sky-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="aero-window w-full max-w-md p-5 bg-white/95 flex flex-col items-center">
+            
+            <div class="w-full flex items-center justify-between border-b pb-2 mb-3">
+                <h3 class="font-extrabold text-sm text-sky-950 flex items-center gap-1.5">
+                    <i class="fa-solid fa-camera text-emerald-600"></i> Kamera Frutiger Aero
+                </h3>
+                <button onclick="closeCameraModal()" class="text-sky-900 font-bold hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- VIEWFINDER FRAME CAMERA LIVE STREAM -->
+            <div class="w-full h-72 aero-camera-viewfinder relative mb-4 flex items-center justify-center">
+                <div class="aero-corner-tl"></div>
+                <div class="aero-corner-tr"></div>
+                <div class="aero-corner-bl"></div>
+                <div class="aero-corner-br"></div>
+                
+                <span class="absolute top-3 left-1/2 -translate-x-1/2 bg-sky-900/60 backdrop-blur-md border border-white/40 text-[9px] font-extrabold text-emerald-300 px-3 py-0.5 rounded-full z-10 tracking-widest uppercase">
+                    TEACHAT CAM
+                </span>
+
+                <video id="cameraVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+                <canvas id="cameraCanvas" class="hidden"></canvas>
+                <img id="cameraPreviewImg" class="hidden w-full h-full object-cover">
+            </div>
+
+            <!-- CONTROLS SHUTTER & BUTTONS -->
+            <div class="w-full flex items-center justify-between px-4">
+                <button onclick="switchCameraFacing()" class="aero-btn text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1" title="Ganti Kamera">
+                    <i class="fa-solid fa-camera-rotate"></i> Flip
+                </button>
+
+                <!-- SHUTTER BUTTON -->
+                <button id="shutterBtn" onclick="takeCameraPhoto()" class="aero-shutter-btn flex items-center justify-center" title="Jepret Foto">
+                </button>
+
+                <!-- BUTTON KIRIM & RETAKE (HIDDEN SAAT LIVE STREAM) -->
+                <div id="cameraConfirmBtns" class="hidden flex items-center gap-2">
+                    <button onclick="retakeCameraPhoto()" class="aero-btn text-white px-3 py-2 rounded-xl text-xs font-bold" title="Foto Ulang">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                    <button onclick="sendCameraPhoto()" class="aero-btn aero-btn-green text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL WALLPAPER SELECTOR -->
+    <div id="wallpaperModal" class="hidden fixed inset-0 bg-sky-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="aero-window w-full max-w-md p-6 bg-white/95">
+            <div class="flex items-center justify-between border-b pb-2 mb-3">
+                <h3 class="font-extrabold text-base text-sky-950"><i class="fa-solid fa-image text-emerald-600 mr-1.5"></i> Wallpaper Roomchat <span id="wallpaperTargetSpan" class="text-emerald-700"></span></h3>
+                <button onclick="closeWallpaperModal()" class="text-sky-900 font-bold hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <p class="text-xs text-sky-800 mb-4 font-semibold">Ganti latar belakang khusus untuk roomchat ini dengan mengunggah gambar buatan kamu sendiri:</p>
+
+            <div class="p-4 bg-sky-50/80 border border-sky-200 rounded-2xl flex items-center justify-between mb-5">
+                <div>
+                    <span class="text-xs font-bold text-sky-950 block">Upload Gambar Sendiri</span>
+                    <span class="text-[10px] text-sky-800">Pilih foto dari galeri perangkat kamu.</span>
+                </div>
+                <input type="file" id="customWallpaperInput" accept="image/*" class="hidden" onchange="handleCustomWallpaperUpload(event)">
+                <button onclick="document.getElementById('customWallpaperInput').click()" class="aero-btn text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                    <i class="fa-solid fa-upload"></i> Upload
+                </button>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <button onclick="resetRoomWallpaper()" class="text-xs font-bold text-sky-700 hover:text-red-600 flex items-center gap-1"><i class="fa-solid fa-rotate-left"></i> Reset Wallpaper</button>
+                <button onclick="closeWallpaperModal()" class="aero-btn text-white px-5 py-1.5 rounded-xl text-xs font-bold">Simpan & Selesai</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT PROFIL PRIBADI -->
+    <div id="profileModal" class="hidden fixed inset-0 bg-sky-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="aero-window w-full max-w-sm p-6 bg-white/95">
+            <div class="flex items-center justify-between border-b pb-2 mb-4">
+                <h3 class="font-extrabold text-base text-sky-950"><i class="fa-solid fa-id-card text-sky-600 mr-1"></i> Edit Profil Saya</h3>
+                <button onclick="closeProfileModal()" class="text-sky-900 hover:text-red-500 font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="flex flex-col items-center gap-3 mb-4">
+                <input type="file" id="modalAvatarInput" accept="image/*" class="hidden" onchange="previewProfileAvatar(event)">
+                <div onclick="document.getElementById('modalAvatarInput').click()" class="relative group cursor-pointer">
+                    <div id="modalAvatarPreview" class="w-20 h-20 rounded-full bg-gradient-to-tr from-sky-400 to-emerald-400 border-2 border-white shadow-md overflow-hidden flex items-center justify-center text-white font-bold text-2xl">
+                        ?
+                    </div>
+                    <div class="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition">
+                        Ganti Foto
+                    </div>
+                </div>
+                <h4 id="modalUsername" class="font-extrabold text-sky-950 text-base">Username</h4>
+            </div>
+
+            <div class="space-y-3 mb-5">
+                <div>
+                    <label class="block text-xs font-bold text-sky-950 mb-1">Bio / Status</label>
+                    <textarea id="modalBioInput" rows="2" placeholder="Tulis bio..." class="aero-input w-full p-2 rounded-xl text-xs text-sky-950 font-semibold resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button onclick="closeProfileModal()" class="px-4 py-1.5 rounded-xl text-xs font-bold text-sky-900">Batal</button>
+                <button onclick="saveProfileChanges()" class="aero-btn text-white px-5 py-1.5 rounded-xl text-xs font-bold">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL BUAT GRUP -->
+    <div id="createGroupModal" class="hidden fixed inset-0 bg-sky-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="aero-window w-full max-w-md p-6 bg-white/95">
+            <div id="createGroupStep1">
+                <h3 class="font-extrabold text-base text-sky-950 mb-3"><i class="fa-solid fa-users text-sky-600 mr-1"></i> Buat Grup Baru (Langkah 1/2)</h3>
+                <div class="mb-3">
+                    <label class="block text-xs font-bold text-sky-950 mb-1">Nama Grup <span class="text-red-500">*</span></label>
+                    <input type="text" id="newGroupName" placeholder="Masukkan nama grup..." class="aero-input w-full px-3 py-2 rounded-xl text-xs text-sky-950 font-semibold">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-sky-950 mb-1">Deskripsi / Bio Grup (Opsional)</label>
+                    <textarea id="newGroupDesc" rows="2" placeholder="Deskripsi grup..." class="aero-input w-full p-2 rounded-xl text-xs text-sky-950 font-semibold resize-none"></textarea>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeCreateGroupModal()" class="px-4 py-1.5 rounded-xl text-xs font-bold text-sky-900">Batal</button>
+                    <button onclick="proceedCreateGroupStep2()" class="aero-btn text-white px-5 py-1.5 rounded-xl text-xs font-bold">Lanjut <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                </div>
+            </div>
+
+            <div id="createGroupStep2" class="hidden">
+                <h3 class="font-extrabold text-base text-sky-950 mb-1"><i class="fa-solid fa-user-plus text-emerald-600 mr-1"></i> Undang Anggota Grup (Langkah 2/2)</h3>
+                <p class="text-xs text-sky-800 mb-3">Pilih cara untuk menambahkan anggota ke dalam grup <span id="createGroupTargetNameSpan" class="font-extrabold text-emerald-700">"Grup"</span>:</p>
+
+                <div class="space-y-3 mb-4">
+                    <div class="p-3 bg-white/90 border border-sky-200 rounded-2xl shadow-sm">
+                        <label class="font-extrabold text-xs text-sky-950 block mb-1">Undang Langsung dari Daftar Kenalan</label>
+                        <p class="text-[10px] text-sky-800 mb-2 font-medium">Centang teman-teman yang ingin langsung kamu masukkan ke grup ini:</p>
+                        <div id="initialMembersList" class="max-h-32 overflow-y-auto space-y-1 p-2 bg-white/70 border border-sky-100 rounded-xl"></div>
+                    </div>
+
+                    <div class="p-3 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl flex items-center justify-between shadow-sm">
+                        <div>
+                            <span class="font-extrabold text-xs text-emerald-950 block">Bagikan Kode Unik Grup</span>
+                            <span class="text-[10px] text-emerald-800">Grup langsung dibuat & menghasilkan 6 digit kode unik.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <button onclick="backToCreateGroupStep1()" class="text-xs font-bold text-sky-800 hover:text-sky-950"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
+                    <div class="flex gap-2">
+                        <button onclick="submitCreateGroup(true)" class="aero-btn aero-btn-green text-white px-3.5 py-1.5 rounded-xl text-xs font-bold">Buat & Ambil Kode</button>
+                        <button onclick="submitCreateGroup(false)" class="aero-btn text-white px-3.5 py-1.5 rounded-xl text-xs font-bold">Buat & Undang Kenalan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL MASUKIN KODE GRUP -->
+    <div id="joinGroupModal" class="hidden fixed inset-0 bg-sky-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="aero-window w-full max-w-sm p-6 bg-white/90">
+            <div id="joinCodeStepInput">
+                <h3 class="font-extrabold text-base text-sky-950 mb-1"><i class="fa-solid fa-key text-amber-500 mr-1"></i> Masukin Kode Grup</h3>
+                <p class="text-[11px] text-sky-800 mb-3">Masukkan 6 digit kode unik grup yang ingin kamu ikuti.</p>
+                <input type="text" id="joinGroupCodeInput" placeholder="Contoh: 123456" class="aero-input w-full px-3 py-2 rounded-xl text-xs text-sky-950 font-mono tracking-widest mb-4 text-center">
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeJoinGroupModal()" class="px-4 py-1.5 rounded-xl text-xs font-bold text-sky-900">Batal</button>
+                    <button onclick="checkGroupCodeBeforeJoin()" class="aero-btn aero-btn-green text-white px-4 py-1.5 rounded-xl text-xs font-bold">Cek Kode</button>
+                </div>
+            </div>
+
+            <div id="joinCodeStepConfirm" class="hidden text-center">
+                <div class="w-14 h-14 mx-auto mb-2 rounded-full bg-sky-100 border border-sky-300 flex items-center justify-center text-sky-600 text-2xl">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h3 class="font-extrabold text-base text-sky-950 mb-1">Kode Cocok!</h3>
+                <p id="confirmGroupPromptText" class="text-xs font-bold text-sky-900 mb-4 px-2">Kamu akan bergabung ke dalam grup <span id="confirmGroupNameSpan" class="text-emerald-700 font-extrabold">"Grup A"</span>.</p>
+                <div class="flex justify-center gap-2">
+                    <button onclick="closeJoinGroupModal()" class="px-4 py-1.5 rounded-xl text-xs font-bold text-sky-900 border border-sky-200">Batal</button>
+                    <button onclick="confirmJoinGroupSubmit()" class="aero-btn aero-btn-green text-white px-5 py-1.5 rounded-xl text-xs font-bold">Ya, Bergabung</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH ANGGOTA GRUP -->
+    <div id="addMembersModal" class="hidden fixed inset-0 bg-sky-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="aero-window w-full max-w-sm p-6 bg-white/95">
+            <h3 class="font-extrabold text-base text-sky-950 mb-1"><i class="fa-solid fa-user-plus text-emerald-600 mr-1"></i> Tambah Anggota</h3>
+            <p class="text-[11px] text-sky-800 mb-3">Centang kenalan yang ingin diundang ke grup ini.</p>
+            <div id="addMembersContainerList" class="max-h-48 overflow-y-auto space-y-1.5 p-2 bg-white/50 border border-sky-100 rounded-xl mb-4"></div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeAddMembersModal()" class="px-4 py-1.5 rounded-xl text-xs font-bold text-sky-900">Batal</button>
+                <button onclick="submitAddMembersToGroup()" class="aero-btn aero-btn-green text-white px-5 py-1.5 rounded-xl text-xs font-bold">Tambahkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LIHAT ANGGOTA GRUP -->
+    <div id="viewMembersModal" class="hidden fixed inset-0 bg-sky-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="aero-window w-full max-w-sm p-6 bg-white/95">
+            <div class="flex items-center justify-between border-b pb-2 mb-3">
+                <h3 class="font-extrabold text-base text-sky-950"><i class="fa-solid fa-users text-sky-600 mr-1"></i> Anggota Grup</h3>
+                <button onclick="closeViewMembersModal()" class="text-sky-900 font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="viewMembersContainerList" class="max-h-56 overflow-y-auto space-y-2 pr-1 mb-4"></div>
+            <button onclick="closeViewMembersModal()" class="aero-btn text-white w-full py-1.5 rounded-xl text-xs font-bold">Tutup</button>
+        </div>
+    </div>
+
+    <!-- MODAL AMBIL KODE UNIK GRUP -->
+    <div id="displayCodeModal" class="hidden fixed inset-0 bg-sky-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="aero-window w-full max-w-sm p-6 bg-white/95 text-center">
+            <h3 class="font-extrabold text-base text-sky-950 mb-1"><i class="fa-solid fa-key text-amber-500 mr-1"></i> Kode Unik Grup</h3>
+            <p class="text-xs text-sky-800 mb-3">Sebarkan kode unik ini kepada orang lain untuk bergabung:</p>
+            
+            <div class="bg-emerald-50 border border-emerald-300 py-3 px-4 rounded-2xl mb-4 flex items-center justify-between shadow-inner">
+                <div class="text-left">
+                    <span class="text-[10px] text-emerald-800 font-bold block">Kode nya:</span>
+                    <span id="generatedCodeBox" class="text-2xl font-mono font-extrabold tracking-widest text-emerald-700 select-all">------</span>
+                </div>
+                <button onclick="copyGroupCode()" class="aero-btn aero-btn-green text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-copy"></i> <span id="copyBtnText">Copy</span>
+                </button>
+            </div>
+
+            <button onclick="closeDisplayCodeModal()" class="aero-btn text-white w-full py-2 rounded-xl text-xs font-bold">Tutup</button>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT INFO GRUP -->
+    <div id="editGroupModal" class="hidden fixed inset-0 bg-sky-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="aero-window w-full max-w-sm p-6 bg-white/95">
+            <h3 class="font-extrabold text-base text-sky-950 mb-3"><i class="fa-solid fa-pen-to-square text-sky-600 mr-1"></i> Edit Info Grup</h3>
+            <div class="mb-3">
+                <label class="block text-xs font-bold text-sky-950 mb-1">Nama Grup Baru</label>
+                <input type="text" id="editGroupNameInput" class="aero-input w-full px-3 py-2 rounded-xl text-xs text-sky-950 font-semibold">
+            </div>
+            <div class="mb-3">
+                <label class="block text-xs font-bold text-sky-950 mb-1">Deskripsi / Bio Grup</label>
+                <textarea id="editGroupDescInput" rows="2" class="aero-input w-full p-2 rounded-xl text-xs text-sky-950 font-semibold resize-none"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-sky-950 mb-1">Foto Profil Grup</label>
+                <input type="file" id="editGroupAvatarInput" accept="image/*" class="text-xs text-sky-900">
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeEditGroupModal()" class="px-4 py-1.5 rounded-xl text-xs font-bold text-sky-900">Batal</button>
+                <button onclick="saveGroupEdit()" class="aero-btn text-white px-5 py-1.5 rounded-xl text-xs font-bold">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
