@@ -131,6 +131,7 @@ body {
 
 /* ROOMCHAT CONTAINER & WALLPAPER COVER FIT */
 .room-wallpaper-bg {
+    background-color: rgba(255, 255, 255, 0.2); /* Ditambahkan fallback warna dasar jika gambar belum/gagal dimuat */
     background-size: cover !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
